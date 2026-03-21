@@ -28,8 +28,10 @@ public class LevelTime : LevelCondition
 
         m_time -= Time.deltaTime;
 
-        UpdateText();
 
+
+        UpdateText();
+        //================================================CAU5===========================================
         if (m_time <= -1f)
         {
             OnConditionComplete();

@@ -16,6 +16,17 @@ public class UIMainManager : MonoBehaviour
         m_menuList = GetComponentsInChildren<IMenu>(true);
     }
 
+
+    #region Thêm phần unsubscribe sự kiện để tránh lỗi khi Manager bị destroy
+    private void OnDestroy()
+    {
+        if (m_gameManager != null)
+        {
+            m_gameManager.StateChangedAction -= OnGameStateChange;
+        }
+    }
+    #endregion
+
     void Start()
     {
         for (int i = 0; i < m_menuList.Length; i++)

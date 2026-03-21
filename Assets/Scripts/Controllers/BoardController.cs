@@ -31,6 +31,20 @@ public class BoardController : MonoBehaviour
 
     private bool m_gameOver;
 
+
+
+
+
+    #region Thêm phần unsubscribe sự kiện để tránh lỗi khi Manager bị destroy
+    private void OnDestroy()
+    {
+        if (m_gameManager != null)
+        {
+            m_gameManager.StateChangedAction -= OnGameStateChange;
+        }
+    }
+    #endregion
+
     public void StartGame(GameManager gameManager, GameSettings gameSettings)
     {
         m_gameManager = gameManager;
