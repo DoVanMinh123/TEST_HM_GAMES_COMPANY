@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+
+/*     sự kiện này được đăng ký ở BoardController và UIMainManager mà không có việc unsubscribe cho 2 lớp đó khiến việc 
+    nếu 2 Manager đó bị destroy mà sự kiện vẫn còn sẽ gây lỗi */
     public event Action<eStateGame> StateChangedAction = delegate { };
 
     public enum eLevelMode
@@ -45,6 +48,7 @@ public class GameManager : MonoBehaviour
 
     private LevelCondition m_levelCondition;
 
+
     private void Awake()
     {
         State = eStateGame.SETUP;
@@ -54,6 +58,7 @@ public class GameManager : MonoBehaviour
         m_uiMenu = FindObjectOfType<UIMainManager>();
         m_uiMenu.Setup(this);
     }
+
 
     void Start()
     {
@@ -96,7 +101,8 @@ public class GameManager : MonoBehaviour
         else if (mode == eLevelMode.TIMER)
         {
             m_levelCondition = this.gameObject.AddComponent<LevelTime>();
-            m_levelCondition.Setup(m_gameSettings.LevelTime, m_uiMenu.GetLevelConditionView(), this);
+            //Câu 5 =============================================BUG, m_gameSettings.LevelMoves PHẢI LÀ m_gameSettings.LevelTime===========================================================
+            m_levelCondition.Setup(m_gameSettings.LevelMoves, m_uiMenu.GetLevelConditionView(), this);
         }
 
         m_levelCondition.ConditionCompleteEvent += GameOver;
