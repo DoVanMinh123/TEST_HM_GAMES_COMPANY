@@ -31,9 +31,7 @@ public class BoardController : MonoBehaviour
 
     private bool m_gameOver;
 
-    // check khi di chuyển chuột thì mới tạo raycast để tránh việc tạo quá nhiều raycast khi không cần thiết
 
-    private Vector3 m_lastMousePos;
 
 
 
@@ -103,9 +101,6 @@ public class BoardController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            m_lastMousePos = Input.mousePosition;
-
-
             var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
             if (hit.collider != null)
             {
@@ -121,17 +116,7 @@ public class BoardController : MonoBehaviour
 
         if (Input.GetMouseButton(0) && m_isDragging)
         {
-            Vector3 currentMousePos = Input.mousePosition;
-
-            // Chỉ raycast khi vị trí chuột thay đổi
-            if (currentMousePos == m_lastMousePos) return;
-
-            m_lastMousePos = currentMousePos;
-
-
             var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-
-
             if (hit.collider != null)
             {
                 if (m_hitCollider != null && m_hitCollider != hit.collider)
