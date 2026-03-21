@@ -31,7 +31,7 @@ public class BoardController : MonoBehaviour
 
     private bool m_gameOver;
 
-
+    private Vector3 m_lastMousePos;
 
 
 
@@ -101,7 +101,9 @@ public class BoardController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            m_lastMousePos = Input.mousePosition;
+
+            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(m_lastMousePos), Vector2.zero);
             if (hit.collider != null)
             {
                 m_isDragging = true;
@@ -116,7 +118,14 @@ public class BoardController : MonoBehaviour
 
         if (Input.GetMouseButton(0) && m_isDragging)
         {
-            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            Vector3 currentMousePos = Input.mousePosition;
+
+            if (currentMousePos == m_lastMousePos) return;
+
+            m_lastMousePos = currentMousePos;
+
+            var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(currentMousePos), Vector2.zero);
+
             if (hit.collider != null)
             {
                 if (m_hitCollider != null && m_hitCollider != hit.collider)
@@ -125,7 +134,8 @@ public class BoardController : MonoBehaviour
 
                     Cell c1 = m_hitCollider.GetComponent<Cell>();
                     Cell c2 = hit.collider.GetComponent<Cell>();
-                    if (AreItemsNeighbor(c1, c2))
+
+                    if (c1 != null && c2 != null && AreItemsNeighbor(c1, c2))
                     {
                         IsBusy = true;
                         SetSortingLayer(c1, c2);
