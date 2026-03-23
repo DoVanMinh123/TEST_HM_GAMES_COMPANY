@@ -10,6 +10,7 @@ public class UIPanelMain : MonoBehaviour, IMenu
 
     [SerializeField] private Button btnMoves;
 
+
     private UIMainManager m_mngr;
 
     private void Awake()

@@ -72,6 +72,52 @@ public class Board
 
     }
 
+
+    #region tạo bản sao của bảng
+    internal BoardClone CreateClone()
+    {
+        BoardClone snapshot = new BoardClone(boardSizeX, boardSizeY);
+
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                NormalItem normalItem = m_cells[x, y].Item as NormalItem;
+                if (normalItem != null)
+                {
+                    snapshot.Set(x, y, normalItem.ItemType);
+                }
+            }
+        }
+
+        return snapshot;
+    }
+    internal void FillFromClone(BoardClone snapshot)
+    {
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                Cell cell = m_cells[x, y];
+
+                if (!cell.IsEmpty)
+                {
+                    cell.Clear();
+                }
+
+                NormalItem item = new NormalItem();
+                item.SetType(snapshot.Get(x, y));
+                item.SetView();
+                item.SetViewRoot(m_root);
+
+                cell.Assign(item);
+                cell.ApplyItemPosition(false);
+            }
+        }
+    }
+    #endregion
+
+
     internal void Fill()
     {
         for (int x = 0; x < boardSizeX; x++)
@@ -136,6 +182,30 @@ public class Board
     }
 
 
+    /*    internal void FillGapsWithNewItems()
+        {
+            for (int x = 0; x < boardSizeX; x++)
+            {
+                for (int y = 0; y < boardSizeY; y++)
+                {
+                    Cell cell = m_cells[x, y];
+                    if (!cell.IsEmpty) continue;
+
+                    NormalItem item = new NormalItem();
+
+                    item.SetType(Utils.GetRandomNormalType());
+                    item.SetView();
+                    item.SetViewRoot(m_root);
+
+                    cell.Assign(item);
+                    cell.ApplyItemPosition(true);
+                }
+            }
+        }*/
+
+
+
+    #region câu 4
     internal void FillGapsWithNewItems()
     {
         for (int x = 0; x < boardSizeX; x++)
@@ -147,7 +217,10 @@ public class Board
 
                 NormalItem item = new NormalItem();
 
-                item.SetType(Utils.GetRandomNormalType());
+                List<NormalItem.eNormalType> excludedTypes = GetNeighbourTypes(cell);
+                NormalItem.eNormalType selectedType = GetLeastUsedAvailableType(excludedTypes);
+
+                item.SetType(selectedType);
                 item.SetView();
                 item.SetViewRoot(m_root);
 
@@ -156,6 +229,105 @@ public class Board
             }
         }
     }
+
+    private List<NormalItem.eNormalType> GetNeighbourTypes(Cell cell)
+    {
+        List<NormalItem.eNormalType> result = new List<NormalItem.eNormalType>();
+
+        AddNeighbourType(cell.NeighbourUp, result);
+        AddNeighbourType(cell.NeighbourRight, result);
+        AddNeighbourType(cell.NeighbourBottom, result);
+        AddNeighbourType(cell.NeighbourLeft, result);
+
+        return result;
+    }
+
+    private void AddNeighbourType(Cell neighbour, List<NormalItem.eNormalType> result)
+    {
+        if (neighbour == null || neighbour.IsEmpty) return;
+
+        NormalItem normalItem = neighbour.Item as NormalItem;
+        if (normalItem == null) return;
+
+        if (!result.Contains(normalItem.ItemType))
+        {
+            result.Add(normalItem.ItemType);
+        }
+    }
+
+    private Dictionary<NormalItem.eNormalType, int> CountNormalItemsOnBoard()
+    {
+        Dictionary<NormalItem.eNormalType, int> counts = new Dictionary<NormalItem.eNormalType, int>();
+
+        foreach (NormalItem.eNormalType type in Enum.GetValues(typeof(NormalItem.eNormalType)))
+        {
+            counts[type] = 0;
+        }
+
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                Cell cell = m_cells[x, y];
+                if (cell.IsEmpty) continue;
+
+                NormalItem normalItem = cell.Item as NormalItem;
+                if (normalItem != null)
+                {
+                    counts[normalItem.ItemType]++;
+                }
+            }
+        }
+
+        return counts;
+    }
+
+    private NormalItem.eNormalType GetLeastUsedAvailableType(List<NormalItem.eNormalType> excludedTypes)
+    {
+        Dictionary<NormalItem.eNormalType, int> counts = CountNormalItemsOnBoard();
+
+        List<NormalItem.eNormalType> candidates = new List<NormalItem.eNormalType>();
+
+        foreach (NormalItem.eNormalType type in Enum.GetValues(typeof(NormalItem.eNormalType)))
+        {
+            if (!excludedTypes.Contains(type))
+            {
+                candidates.Add(type);
+            }
+        }
+
+        // Nếu vì lý do nào đó không còn candidate hợp lệ, fallback random toàn bộ
+        if (candidates.Count == 0)
+        {
+            return Utils.GetRandomNormalType();
+        }
+
+        int minCount = int.MaxValue;
+        List<NormalItem.eNormalType> leastUsedCandidates = new List<NormalItem.eNormalType>();
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            NormalItem.eNormalType type = candidates[i];
+            int count = counts[type];
+
+            if (count < minCount)
+            {
+                minCount = count;
+                leastUsedCandidates.Clear();
+                leastUsedCandidates.Add(type);
+            }
+            else if (count == minCount)
+            {
+                leastUsedCandidates.Add(type);
+            }
+        }
+
+        int randomIndex = UnityEngine.Random.Range(0, leastUsedCandidates.Count);
+        return leastUsedCandidates[randomIndex];
+    }
+    #endregion
+
+
 
     internal void ExplodeAllItems()
     {

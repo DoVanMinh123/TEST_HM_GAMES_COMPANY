@@ -45,6 +45,11 @@ public class GameManager : MonoBehaviour
 
     private LevelCondition m_levelCondition;
 
+    // BẢN SAO CỦA BẢNG CHƠI BAN ĐẦU
+    private eLevelMode m_currentLevelMode;
+
+    private BoardClone m_restartSnapshot;
+
     private void Awake()
     {
         State = eStateGame.SETUP;
@@ -85,6 +90,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadLevel(eLevelMode mode)
     {
+        m_currentLevelMode = mode;
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
         m_boardController.StartGame(this, m_gameSettings);
 
@@ -138,4 +144,48 @@ public class GameManager : MonoBehaviour
             m_levelCondition = null;
         }
     }
+
+
+
+    #region khởi tạo lại màn chơi dựa trên bản sao đã tạo
+    public void RestartLevel()
+    {
+        if (m_boardController != null)
+        {
+            m_restartSnapshot = m_boardController.GetInitialSnapshot();
+        }
+
+        ClearLevel();
+
+        if (m_levelCondition != null)
+        {
+            m_levelCondition.ConditionCompleteEvent -= GameOver;
+            Destroy(m_levelCondition);
+            m_levelCondition = null;
+        }
+
+        LoadLevelFromSnapshot(m_currentLevelMode, m_restartSnapshot);
+    }
+
+    private void LoadLevelFromSnapshot(eLevelMode mode, BoardClone snapshot)
+    {
+        m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
+        m_boardController.StartGameFromClone(this, m_gameSettings, snapshot);
+
+        if (mode == eLevelMode.MOVES)
+        {
+            m_levelCondition = this.gameObject.AddComponent<LevelMoves>();
+            m_levelCondition.Setup(m_gameSettings.LevelMoves, m_uiMenu.GetLevelConditionView(), m_boardController);
+        }
+        else if (mode == eLevelMode.TIMER)
+        {
+            m_levelCondition = this.gameObject.AddComponent<LevelTime>();
+            m_levelCondition.Setup(m_gameSettings.LevelTime, m_uiMenu.GetLevelConditionView(), this);
+        }
+
+        m_levelCondition.ConditionCompleteEvent += GameOver;
+
+        State = eStateGame.GAME_STARTED;
+    }
+    #endregion
 }

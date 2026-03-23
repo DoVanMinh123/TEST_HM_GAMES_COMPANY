@@ -32,8 +32,8 @@ public class BoardController : MonoBehaviour
     private bool m_gameOver;
 
     private Vector3 m_lastMousePos;
-
-
+    //CloneBoard
+    private BoardClone m_initialClone;
 
     #region Thêm phần unsubscribe sự kiện để tránh lỗi khi Manager bị destroy
     private void OnDestroy()
@@ -42,6 +42,31 @@ public class BoardController : MonoBehaviour
         {
             m_gameManager.StateChangedAction -= OnGameStateChange;
         }
+    }
+    #endregion
+
+    #region lấy bản sao của bảng
+    public BoardClone GetInitialSnapshot()
+    {
+        return m_initialClone;
+    }
+
+    public void StartGameFromClone(GameManager gameManager, GameSettings gameSettings, BoardClone snapshot)
+    {
+        m_gameManager = gameManager;
+        m_gameSettings = gameSettings;
+
+        m_gameManager.StateChangedAction += OnGameStateChange;
+
+        m_cam = Camera.main;
+
+        m_board = new Board(this.transform, gameSettings);
+        m_board.FillFromClone(snapshot);
+
+        m_initialClone = snapshot;
+        m_potentialMatch = m_board.GetPotentialMatches();
+        IsBusy = false;
+        m_timeAfterFill = 0f;
     }
     #endregion
 
@@ -212,8 +237,12 @@ public class BoardController : MonoBehaviour
             m_potentialMatch = m_board.GetPotentialMatches();
             if (m_potentialMatch.Count > 0)
             {
-                IsBusy = false;
+                if (m_initialClone == null)
+                {
+                    m_initialClone = m_board.CreateClone();
+                }
 
+                IsBusy = false;
                 m_timeAfterFill = 0f;
             }
             else

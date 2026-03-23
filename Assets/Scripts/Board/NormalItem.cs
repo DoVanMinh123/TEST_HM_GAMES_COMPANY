@@ -17,9 +17,34 @@ public class NormalItem : Item
 
     public eNormalType ItemType;
 
+    private static NormalItemSkinSetting m_skinDatabase;
+
     public void SetType(eNormalType type)
     {
         ItemType = type;
+    }
+
+    public override void SetView()
+    {
+        base.SetView();
+
+        if (View == null) return;
+
+        if (m_skinDatabase == null)
+        {
+            m_skinDatabase = Resources.Load<NormalItemSkinSetting>(Constants.NORMAL_ITEM_SKIN_DATABASE_PATH);
+        }
+
+        if (m_skinDatabase == null) return;
+
+        SpriteRenderer spriteRenderer = View.GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null) return;
+
+        Sprite sprite = m_skinDatabase.GetSprite(ItemType);
+        if (sprite != null)
+        {
+            spriteRenderer.sprite = sprite;
+        }
     }
 
     protected override string GetPrefabName()
@@ -56,7 +81,6 @@ public class NormalItem : Item
     internal override bool IsSameType(Item other)
     {
         NormalItem it = other as NormalItem;
-
         return it != null && it.ItemType == this.ItemType;
     }
 }
