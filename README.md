@@ -32,12 +32,12 @@ Câu 5:
   Ưu điểm của dự án sau khi nghiên cứu :
   
   + Project được chia tách thành các đổi tượng rõ ràng, dễ kiểm soát: GameManager (Quản lý và điều phối tổng quan của game), BoardController+Board (Xử lý nguyên lý của gameplay như cách tạo combo, cách ăn được 1 dãy item giống nhau,cách spawm item,...), Cell+Item+NormalItem+BonusItem (Xử lý dữ liệu các ô trong bảng và các vật phẩm của ô), LevelMoves+LevelTime (cơ chế,chức năng, điều kiện của mỗi level), cuối cùng làI UIMainManager+các panel UI (xử lý các sự kiện UI của game)
-    + Sử dụng event và eStateGame trong GameManager và các lớp UIMainManager, BoardController đăng ký tới nó để xử lý các state của game trong quá trình thao tác giúp cho game logic sạch, rõ ràng và dễ mở rộng sang các chức năng Manager khác
-    + Sử dụng ScriptableObject để quản lý setting của game giúp game dễ kiểm soát và thay đổi
-    + Board và BoardController được tách riêng, BoardController xử lý gameplay chính còn Board xử lý logic của bàn cơ ví dụ như fill, swap, match, shift, shuffle... Cách tách này giúp code sạch và dễ theo dõi hơn
+  + Sử dụng event và eStateGame trong GameManager và các lớp UIMainManager, BoardController đăng ký tới nó để xử lý các state của game trong quá trình thao tác giúp cho game logic sạch, rõ ràng và dễ mở rộng sang các chức năng Manager khác
+  + Sử dụng ScriptableObject để quản lý setting của game giúp game dễ kiểm soát và thay đổi
+  + Board và BoardController được tách riêng, BoardController xử lý gameplay chính còn Board xử lý logic của bàn cơ ví dụ như fill, swap, match, shift, shuffle... Cách tách này giúp code sạch và dễ theo dõi hơn
 
   Nhược điểm của dự án:
   
-    + Lỗi trong hàm LoadLevel(eLevelMode mode), phần mode == eLevelMode.TIMER vẫn đang setup là  m_levelCondition.Setup(m_gameSettings.LevelMoves, m_uiMenu.GetLevelConditionView(), this); khiến cho time của mode không chạy đúng (đã fix)
-    + Trong lớp LevelTime ở hàm update đang có điều kiện  if (m_time <= -1f) {OnConditionComplete();} nhưng trong  UpdateText(); điều kiện lại là if (m_time < 0f) return;. Điều này khiến cho trong mode game play khi thời gian đã chạy về không nhưng game vẫn chưa dừng, vẫn delay khựng 1 lúc mới hiện ra UI gameOver (đã fix)
-    + Trong BoardController.cs đang xử lý cả InputHander điều này khiến BoardCtr xử lý các việc thao tác người chơi, cả cơ chế của bảng, không được sạch. Nên tách việc xử lý handel với bảng ra 1 lớp riêng ví dụ BoardInputHandler
+  + Lỗi trong hàm LoadLevel(eLevelMode mode), phần mode == eLevelMode.TIMER vẫn đang setup là  m_levelCondition.Setup(m_gameSettings.LevelMoves, m_uiMenu.GetLevelConditionView(), this); khiến cho time của mode không chạy đúng (đã fix)
+  + Trong lớp LevelTime ở hàm update đang có điều kiện  if (m_time <= -1f) {OnConditionComplete();} nhưng trong  UpdateText(); điều kiện lại là if (m_time < 0f) return;. Điều này khiến cho trong mode game play khi thời gian đã chạy về không nhưng game vẫn chưa dừng, vẫn delay khựng 1 lúc mới hiện ra UI gameOver (đã fix)
+  + Trong BoardController.cs đang xử lý cả InputHander điều này khiến BoardCtr xử lý các việc thao tác người chơi, cả cơ chế của bảng, không được sạch. Nên tách việc xử lý handel với bảng ra 1 lớp riêng ví dụ BoardInputHandler
