@@ -31,8 +31,7 @@ public class LevelTime : LevelCondition
 
 
         UpdateText();
-        //================================================CAU5===========================================
-        if (m_time <= -1f)
+        if (m_time <= 0f)
         {
             OnConditionComplete();
         }

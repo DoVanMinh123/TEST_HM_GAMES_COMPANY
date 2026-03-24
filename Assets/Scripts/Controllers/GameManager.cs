@@ -69,7 +69,6 @@ public class GameManager : MonoBehaviour
     void Update()
     {
 
-        //===================================CHANGE1===========================================
        // if (m_boardController != null) m_boardController.Update();
     }
 
