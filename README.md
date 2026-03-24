@@ -1,4 +1,4 @@
-Câu 1:
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/c8513350-abd5-4d02-88ed-c1155a3db372" />Câu 1:
 - Ở trong file GameManager hàm Update đang chạy đến m_boardController.Update(); mặc dù trong file BoardController đã có hàm update chạy rồi, BoardController đã được tạo khi loadlevel(eLevelMode mode) rồi. Điều này khiến input xử lý 2 lần/frame, bị thừa, cho nên xóa dòng if (m_boardController != null) m_boardController.Update() đi.
 - Biến event Action StateChangedAction trong file GameManager được đăng ký ở 2 file BoardController và UIMainManager, nhưng đang thiếu mất các trường hợp phải hủy đăng ký đi, ví dụ như khi 1 trong 2 bị destroy, GameManager vẫn còn giữ delegate tới object cũ, restart level nhiều lần dễ phát sinh callback không cần thiết. Thêm phần hủy đăng ký ở 2 file BoardController và UIMainManager để ở trong hàm onDestroy().
 - Ở trong file BoardController trong update khi gọi câu lệnh if (Input.GetMouseButton(0) && m_isDragging) {var hit = Physics2D.Raycast(m_cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero); ...} điều này sẽ khiến việc mỗi frame tạo ra raycast 1 lần ảnh hưởng tới hiệu suất game, chỉ khi nào người chơi thực sự kéo tay thì mới tại ray kiểm tra. Tạo thêm biến vị trí khi mới nhấn và so sánh vị trí khi drag, khi 2 vị trí khác nhau mới tạo ray.
@@ -27,3 +27,13 @@ Câu 4:
 - Thêm hàm GetLeastUsedAvailableType(List<NormalItem.eNormalType> excludedTypes) để tìm ra item hợp lệ có số lượng ít nhất trên board.
 - Nếu có nhiều loại cùng ít nhất, hàm sẽ chọn ngẫu nhiên trong nhóm đó.
   
+Câu 5:
+  Ưu điểm của dự án sau khi nghiên cứu :
+  + Project được chia tách thành các đổi tượng rõ ràng, dễ kiểm soát: GameManager (Quản lý và điều phối tổng quan của game), BoardController+Board (Xử lý nguyên lý của gameplay như cách tạo combo, cách ăn được 1 dãy item giống nhau,cách spawm item,...), Cell+Item+NormalItem+BonusItem (Xử lý dữ liệu các ô trong bảng và các vật phẩm của ô), LevelMoves+LevelTime (cơ chế,chức năng, điều kiện của mỗi level), cuối cùng làI UIMainManager+các panel UI (xử lý các sự kiện UI của game)
+    + Sử dụng event và eStateGame trong GameManager và các lớp UIMainManager, BoardController đăng ký tới nó để xử lý các state của game trong quá trình thao tác giúp cho game logic sạch, rõ ràng và dễ mở rộng sang các chức năng Manager khác
+    + Sử dụng ScriptableObject để quản lý setting của game giúp game dễ kiểm soát và thay đổi
+    + Board và BoardController được tách riêng, BoardController xử lý gameplay chính còn Board xử lý logic của bàn cơ ví dụ như fill, swap, match, shift, shuffle... Cách tách này giúp code sạch và dễ theo dõi hơn
+  Nhược điểm của dự án:
+    + Lỗi trong hàm LoadLevel(eLevelMode mode), phần mode == eLevelMode.TIMER vẫn đang setup là  m_levelCondition.Setup(m_gameSettings.LevelMoves, m_uiMenu.GetLevelConditionView(), this); khiến cho time của mode không chạy đúng (đã fix)
+    + Trong lớp LevelTime ở hàm update đang có điều kiện  if (m_time <= -1f) {OnConditionComplete();} nhưng trong  UpdateText(); điều kiện lại là if (m_time < 0f) return;. Điều này khiến cho trong mode game play khi thời gian đã chạy về không nhưng game vẫn chưa dừng, vẫn delay khựng 1 lúc mới hiện ra UI gameOver (đã fix)
+    + Trong BoardController.cs đang xử lý cả InputHander điều này khiến BoardCtr xử lý các việc thao tác người chơi, cả cơ chế của bảng, không được sạch. Nên tách việc xử lý handel với bảng ra 1 lớp riêng ví dụ BoardInputHandler
